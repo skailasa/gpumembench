@@ -16,7 +16,6 @@ AMD_DIRS  = cachebench-amd  shmembench-amd
 CUDA_BINARIES = \
 	cachebench-cuda/cachebench \
 	cachebench-cuda/cachebench-l2-only \
-	cachebench-cuda/cachebench-tex-loads \
 	shmembench-cuda/shmembench \
 
 AMD_BINARIES = shmembench-amd/shmembench
