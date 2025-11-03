@@ -1,10 +1,10 @@
 # Makefile: This file is part of the gpumembench micro-benchmark suite.
-# 
+#
 # Contact: Elias Konstantinidis <ekondis@gmail.com>
 
 include ../common.mk
 CC = g++
-OPTFLAG = -O2 -fomit-frame-pointer -ftree-vectorize -ftree-vectorizer-verbose=0  -funroll-loops -ffast-math -fassociative-math -msse2 -msse
+OPTFLAG = -O2 -fomit-frame-pointer -ftree-vectorize -ftree-vectorizer-verbose=0  -funroll-loops -ffast-math -fassociative-math
 INCDIR = ../common
 FLAGS = ${OPTFLAG} -I${OPENCL_INSTALL_PATH}/include -Wall -g -I${INCDIR}
 LFLAGS = -L${OPENCL_LIBRARY_PATH} -lm -lstdc++ -lOpenCL -lrt
