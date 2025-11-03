@@ -1,32 +1,76 @@
-# Makefile: This file is part of the gpumembench micro-benchmark suite.
-#
-# Contact: Elias Konstantinidis <ekondis@gmail.com>
+# ============================================================
+# GPU backend selector
+# Usage:
+#   make BACKEND=cuda
+#   make BACKEND=amd
+# Default: none (no GPU build)
+# ============================================================
 
-.PHONY: all clean rebuild
+BACKEND ?= none
+
+# Directories per backend
+CUDA_DIRS = cachebench-cuda shmembench-cuda constbench-cuda
+AMD_DIRS  = cachebench-amd  shmembench-amd  constbench-amd
+
+# Binaries per backend
+CUDA_BINARIES = \
+	cachebench-cuda/cachebench \
+	cachebench-cuda/cachebench-l2-only \
+	cachebench-cuda/cachebench-tex-loads \
+	shmembench-cuda/shmembench \
+	constbench-cuda/constbench
+
+AMD_BINARIES = \
+	cachebench-amd/cachebench \
+	cachebench-amd/cachebench-l2-only \
+	cachebench-amd/cachebench-tex-loads \
+	shmembench-amd/shmembench \
+	constbench-amd/constbench
+
+# ============================================================
+# Conditional logic for backends
+# ============================================================
+
+ifeq ($(BACKEND),cuda)
 
 all:
-	$(MAKE) -C cachebench-cuda
-# 	$(MAKE) -C cachebench-ocl
-	$(MAKE) -C shmembench-cuda
-# 	$(MAKE) -C shmembench-ocl
-	$(MAKE) -C constbench-cuda
-# 	$(MAKE) -C constbench-ocl
-	mkdir -p bin
-	cp cachebench-cuda/cachebench cachebench-cuda/cachebench-l2-only cachebench-cuda/cachebench-tex-loads shmembench-cuda/shmembench constbench-cuda/constbench bin/
-# 	cp cachebench-ocl/cachebench-ocl shmembench-ocl/shmembench-ocl constbench-ocl/constbench-ocl bin/
+	@echo ">>> Building CUDA benchmarks..."
+	$(foreach dir,$(CUDA_DIRS),$(MAKE) -C $(dir);)
+	mkdir -p bin/cuda
+	cp $(CUDA_BINARIES) bin/cuda/
 
 clean:
-	$(MAKE) -C cachebench-cuda clean
-# 	$(MAKE) -C cachebench-ocl clean
-	$(MAKE) -C shmembench-cuda clean
-# 	$(MAKE) -C shmembench-ocl clean
-	$(MAKE) -C constbench-cuda clean
-# 	$(MAKE) -C constbench-ocl clean
+	$(foreach dir,$(CUDA_DIRS),$(MAKE) -C $(dir) clean;)
 
 rebuild:
-	$(MAKE) -C cachebench-cuda rebuild
-# 	$(MAKE) -C cachebench-ocl rebuild
-	$(MAKE) -C shmembench-cuda rebuild
-# 	$(MAKE) -C shmembench-ocl rebuild
-	$(MAKE) -C constbench-cuda rebuild
-# 	$(MAKE) -C constbench-ocl rebuild
+	$(foreach dir,$(CUDA_DIRS),$(MAKE) -C $(dir) rebuild;)
+
+else ifeq ($(BACKEND),amd)
+
+all:
+	@echo ">>> Building AMD benchmarks..."
+	$(foreach dir,$(AMD_DIRS),$(MAKE) -C $(dir);)
+	mkdir -p bin/amd
+	cp $(AMD_BINARIES) bin/amd/
+
+clean:
+	$(foreach dir,$(AMD_DIRS),$(MAKE) -C $(dir) clean;)
+
+rebuild:
+	$(foreach dir,$(AMD_DIRS),$(MAKE) -C $(dir) rebuild;)
+
+else
+
+all:
+	@echo ">>> No backend specified."
+	@echo "    Use one of:"
+	@echo "      make BACKEND=cuda"
+	@echo "      make BACKEND=amd"
+
+clean:
+	@echo ">>> No backend specified. Nothing to clean."
+
+rebuild:
+	@echo ">>> No backend specified. Nothing to rebuild."
+
+endif
