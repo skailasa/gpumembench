@@ -1,5 +1,5 @@
 # Makefile: This file is part of the gpumembench micro-benchmark suite.
-# 
+#
 # Contact: Elias Konstantinidis <ekondis@gmail.com>
 
 include ../common.mk
@@ -14,8 +14,8 @@ ifeq (${BITS},64)
 	LIBSUFFIX := 64
 endif
 LFLAGS = -L${CUDA_INSTALL_PATH}/lib${LIBSUFFIX} -lm -lstdc++ -lcudart -lrt
-NVCODE = -gencode=arch=compute_52,code=\"compute_52\" -gencode=arch=compute_30,code=\"compute_30\" -gencode=arch=compute_20,code=\"compute_20\" -ftz=true
-
+# NVCODE = -gencode=arch=compute_52,code=\"compute_52\" -gencode=arch=compute_30,code=\"compute_30\" -gencode=arch=compute_20,code=\"compute_20\" -ftz=true
+NVCODE = -gencode arch=compute_89,code=sm_89
 constbench: main.o const_kernels.o
 	${CC} -o $@ $^ ${LFLAGS}
 

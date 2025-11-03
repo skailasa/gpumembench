@@ -177,7 +177,7 @@ extern "C" void constbenchGPU(int *a, long gridsize){
 	printf("\tbenchmark_constant  (32bit):%10.4f msecs\n", krn_time_constant_32b);
 	printf("\tbenchmark_constant  (64bit):%10.4f msecs\n", krn_time_constant_64b);
 	printf("\tbenchmark_constant (128bit):%10.4f msecs\n", krn_time_constant_128b);
-	
+
 	printf("Total operations executed\n");
 	const long long operations_bytes  = (long long)((VECTOR_SIZE))*gridsize*sizeof(int);
 	const long long operations_32bit  = (long long)((VECTOR_SIZE))*gridsize/(sizeof(int)/sizeof(int));
@@ -194,11 +194,30 @@ extern "C" void constbenchGPU(int *a, long gridsize){
 	printf("\tusing  64bit operations :%8.2f GB/sec (%6.2f billion accesses/sec)\n", ( (double)operations_bytes)/krn_time_constant_64b*1000./(double)(1000.*1000.*1000.),  ((double)operations_64bit)/ krn_time_constant_64b*1000./(double)(1000*1000*1000));
 	printf("\tusing 128bit operations :%8.2f GB/sec (%6.2f billion accesses/sec)\n", ((double)operations_bytes)/krn_time_constant_128b*1000./(double)(1000.*1000.*1000.), ((double)operations_128bit)/krn_time_constant_128b*1000./(double)(1000*1000*1000));
 
-	printf("Normalized per SM\n");
-	cudaDeviceProp deviceProp = GetDeviceProperties();
-	printf("\tConstant memory operations per clock (32bit) :%8.2f (per SM%6.2f)\n",((double)operations_32bit)/(deviceProp.clockRate*krn_time_constant_32b), ((double)operations_32bit)/(deviceProp.clockRate*krn_time_constant_32b)/deviceProp.multiProcessorCount);
-	printf("\tConstant memory operations per clock (64bit) :%8.2f (per SM%6.2f)\n",((double)operations_64bit)/(deviceProp.clockRate*krn_time_constant_64b), ((double)operations_64bit)/(deviceProp.clockRate*krn_time_constant_64b)/deviceProp.multiProcessorCount);
-	printf("\tConstant memory operations per clock (128bit):%8.2f (per SM%6.2f)\n",((double)operations_128bit)/(deviceProp.clockRate*krn_time_constant_128b), ((double)operations_128bit)/(deviceProp.clockRate*krn_time_constant_128b)/deviceProp.multiProcessorCount);
+	// printf("Normalized per SM\n");
+	// cudaDeviceProp deviceProp = GetDeviceProperties();
+	// printf("\tConstant memory operations per clock (32bit) :%8.2f (per SM%6.2f)\n",((double)operations_32bit)/(deviceProp.clockRate*krn_time_constant_32b), ((double)operations_32bit)/(deviceProp.clockRate*krn_time_constant_32b)/deviceProp.multiProcessorCount);
+	// printf("\tConstant memory operations per clock (64bit) :%8.2f (per SM%6.2f)\n",((double)operations_64bit)/(deviceProp.clockRate*krn_time_constant_64b), ((double)operations_64bit)/(deviceProp.clockRate*krn_time_constant_64b)/deviceProp.multiProcessorCount);
+	// printf("\tConstant memory operations per clock (128bit):%8.2f (per SM%6.2f)\n",((double)operations_128bit)/(deviceProp.clockRate*krn_time_constant_128b), ((double)operations_128bit)/(deviceProp.clockRate*krn_time_constant_128b)/deviceProp.multiProcessorCount);
+
+printf("Normalized per SM\n");
+cudaDeviceProp deviceProp = GetDeviceProperties();
+
+int current_device = 0;
+int coreClock = 0; // kHz
+cudaGetDevice(&current_device);
+cudaDeviceGetAttribute(&coreClock, cudaDevAttrClockRate, current_device);
+
+printf("\tConstant memory operations per clock (32bit) :%8.2f (per SM%6.2f)\n",
+       ((double)operations_32bit)/(coreClock * krn_time_constant_32b),
+       ((double)operations_32bit)/(coreClock * krn_time_constant_32b) / deviceProp.multiProcessorCount);
+printf("\tConstant memory operations per clock (64bit) :%8.2f (per SM%6.2f)\n",
+       ((double)operations_64bit)/(coreClock * krn_time_constant_64b),
+       ((double)operations_64bit)/(coreClock * krn_time_constant_64b) / deviceProp.multiProcessorCount);
+printf("\tConstant memory operations per clock (128bit):%8.2f (per SM%6.2f)\n",
+       ((double)operations_128bit)/(coreClock * krn_time_constant_128b),
+       ((double)operations_128bit)/(coreClock * krn_time_constant_128b) / deviceProp.multiProcessorCount);
+
 
 	printf("Compute overhead\n");
 	printf("\tAddition operations per constant memory operation  (32bit): 1\n");

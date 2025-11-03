@@ -1,5 +1,5 @@
 # Makefile: This file is part of the gpumembench micro-benchmark suite.
-# 
+#
 # Contact: Elias Konstantinidis <ekondis@gmail.com>
 
 include ../common.mk
@@ -14,8 +14,9 @@ ifeq (${BITS},64)
 	LIBSUFFIX := 64
 endif
 LFLAGS = -L${CUDA_INSTALL_PATH}/lib${LIBSUFFIX} -lm -lstdc++ -lcudart -lrt
-NVCODE = -gencode=arch=compute_52,code=\"compute_52\" -gencode=arch=compute_30,code=\"compute_30\" -gencode=arch=compute_20,code=\"compute_20\"
+# NVCODE = -gencode=arch=compute_52,code=\"compute_52\" -gencode=arch=compute_30,code=\"compute_30\" -gencode=arch=compute_20,code=\"compute_20\"
 #NVCODE = -gencode=arch=compute_30,code=\"compute_30,sm_30\"
+NVCODE = -gencode arch=compute_89,code=sm_89
 
 .PHONY: all
 
@@ -40,7 +41,8 @@ cache_kernels_l2.o: cache_kernels.cu
 	${NVCC} ${NVCODE} ${NVFLAGS} -DUNIX -DL2_ONLY -c $< -o $@
 
 cache_kernels_texloads.o: cache_kernels.cu
-	${NVCC} ${NVCODE} ${NVFLAGS} -DUNIX -DTEX_LOADS -c $< -o $@
+# 	${NVCC} ${NVCODE} ${NVFLAGS} -DUNIX -DTEX_LOADS -c $< -o $@
+	${NVCC} ${NVCODE} ${NVFLAGS} -DUNIX -c $< -o $@
 
 clean:
 	\rm -f cachebench cachebench-l2-only cachebench-tex-loads main.o cache_kernels.o cache_kernels_l2.o cache_kernels_texloads.o

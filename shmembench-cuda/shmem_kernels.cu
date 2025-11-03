@@ -84,7 +84,7 @@ extern __shared__ float shm_buffer_ptr[];
 template <class T>
 __global__ void benchmark_shmem(T *g_data){
 	T *shm_buffer = (T*)shm_buffer_ptr;
-	int tid = threadIdx.x; 
+	int tid = threadIdx.x;
 	int globaltid = blockIdx.x*blockDim.x + tid;
 	set_vector(shm_buffer, tid+0*blockDim.x, init_val<T>(tid));
 	set_vector(shm_buffer, tid+1*blockDim.x, init_val<T>(tid+1));
@@ -174,7 +174,7 @@ extern "C" void shmembenchGPU(double *c, long size){
 	printf("\tbenchmark_shmem  (32bit):%10.3f msecs\n", krn_time_shmem_32b);
 	printf("\tbenchmark_shmem  (64bit):%10.3f msecs\n", krn_time_shmem_64b);
 	printf("\tbenchmark_shmem (128bit):%10.3f msecs\n", krn_time_shmem_128b);
-	
+
 	printf("Total operations executed\n");
 	const long long operations_bytes  = (6LL+4*5*TOTAL_ITERATIONS+6)*size*sizeof(float);
 	const long long operations_32bit  = (6LL+4*5*TOTAL_ITERATIONS+6)*size;
@@ -194,10 +194,28 @@ extern "C" void shmembenchGPU(double *c, long size){
 			((double)operations_64bit)/ krn_time_shmem_64b*1000./(double)(1000*1000*1000),
 			((double)operations_128bit)/krn_time_shmem_128b*1000./(double)(1000*1000*1000)));
 
-	printf("Normalized per SM\n");
-	cudaDeviceProp deviceProp = GetDeviceProperties();
-	printf("\tshared memory operations per clock (32bit) :%8.2f (per SM%6.2f)\n",((double)operations_32bit)/(deviceProp.clockRate*krn_time_shmem_32b), ((double)operations_32bit)/(deviceProp.clockRate*krn_time_shmem_32b)/deviceProp.multiProcessorCount);
-	printf("\tshared memory operations per clock (64bit) :%8.2f (per SM%6.2f)\n",((double)operations_64bit)/(deviceProp.clockRate*krn_time_shmem_64b), ((double)operations_64bit)/(deviceProp.clockRate*krn_time_shmem_64b)/deviceProp.multiProcessorCount);
-	printf("\tshared memory operations per clock (128bit):%8.2f (per SM%6.2f)\n",((double)operations_128bit)/(deviceProp.clockRate*krn_time_shmem_128b), ((double)operations_128bit)/(deviceProp.clockRate*krn_time_shmem_128b)/deviceProp.multiProcessorCount);
+	int coreClock = 0;
+	int current_device = 0;
+	cudaGetDevice(&current_device);
+	cudaDeviceGetAttribute(&coreClock, cudaDevAttrClockRate, current_device);
+	cudaDeviceProp deviceProp;
+	CUDA_SAFE_CALL( cudaGetDeviceProperties(&deviceProp, current_device) );
+
+printf("\tshared memory operations per clock (32bit) :%8.2f (per SM%6.2f)\n",
+       ((double)operations_32bit)/(coreClock*krn_time_shmem_32b),
+       ((double)operations_32bit)/(coreClock*krn_time_shmem_32b)/deviceProp.multiProcessorCount);
+printf("\tshared memory operations per clock (64bit) :%8.2f (per SM%6.2f)\n",
+       ((double)operations_64bit)/(coreClock*krn_time_shmem_64b),
+       ((double)operations_64bit)/(coreClock*krn_time_shmem_64b)/deviceProp.multiProcessorCount);
+printf("\tshared memory operations per clock (128bit):%8.2f (per SM%6.2f)\n",
+       ((double)operations_128bit)/(coreClock*krn_time_shmem_128b),
+       ((double)operations_128bit)/(coreClock*krn_time_shmem_128b)/deviceProp.multiProcessorCount);
+
+
+	// printf("Normalized per SM\n");
+	// cudaDeviceProp deviceProp = GetDeviceProperties();
+	// printf("\tshared memory operations per clock (32bit) :%8.2f (per SM%6.2f)\n",((double)operations_32bit)/(deviceProp.clockRate*krn_time_shmem_32b), ((double)operations_32bit)/(deviceProp.clockRate*krn_time_shmem_32b)/deviceProp.multiProcessorCount);
+	// printf("\tshared memory operations per clock (64bit) :%8.2f (per SM%6.2f)\n",((double)operations_64bit)/(deviceProp.clockRate*krn_time_shmem_64b), ((double)operations_64bit)/(deviceProp.clockRate*krn_time_shmem_64b)/deviceProp.multiProcessorCount);
+	// printf("\tshared memory operations per clock (128bit):%8.2f (per SM%6.2f)\n",((double)operations_128bit)/(deviceProp.clockRate*krn_time_shmem_128b), ((double)operations_128bit)/(deviceProp.clockRate*krn_time_shmem_128b)/deviceProp.multiProcessorCount);
 	CUDA_SAFE_CALL( cudaDeviceReset() );
 }

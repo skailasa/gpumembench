@@ -14,9 +14,14 @@
 
 const int BLOCK_SIZE = 256;
 
-texture< int, 1, cudaReadModeElementType> texdataI1;
-texture<int2, 1, cudaReadModeElementType> texdataI2;
-texture<int4, 1, cudaReadModeElementType> texdataI4;
+// texture< int, 1, cudaReadModeElementType> texdataI1;
+// texture<int2, 1, cudaReadModeElementType> texdataI2;
+// texture<int4, 1, cudaReadModeElementType> texdataI4;
+
+// Modern CUDA 12+ texture objects
+cudaTextureObject_t texdataI1 = 0;
+cudaTextureObject_t texdataI2 = 0;
+cudaTextureObject_t texdataI4 = 0;
 
 template<class T>
 class dev_fun{
@@ -60,7 +65,8 @@ template<>
 __device__ int dev_fun<int>::load(volatile const int* p, unsigned int offset){
 	int retval;
 #ifdef TEX_LOADS
-	retval = tex1Dfetch(texdataI1, offset);
+	// retval = tex1Dfetch(texdataI1, offset);
+	retval = tex1Dfetch<int>(texdataI1, (int)offset);
 #else
 	p += offset;
 	// Cache Operators for Memory Load Instructions
@@ -123,7 +129,8 @@ __device__ int2 dev_fun<int2>::load(volatile const int2* p, unsigned int offset)
 		int2 i2;
 	} retval;
 #ifdef TEX_LOADS
-	retval.i2 = tex1Dfetch(texdataI2, offset);
+	// retval.i2 = tex1Dfetch(texdataI2, offset);
+	retval.i2 = tex1Dfetch<int2>(texdataI2, (int)offset);
 #else
 	p += offset;
 #ifdef L2_ONLY
@@ -177,7 +184,8 @@ template<>
 __device__ int4 dev_fun<int4>::load(volatile const int4* p, unsigned int offset){
 	int4 retval;
 #ifdef TEX_LOADS
-	retval = tex1Dfetch(texdataI4, offset);
+	// retval = tex1Dfetch(texdataI4, offset);
+	retval = tex1Dfetch<int4>(texdataI4, (int)offset);
 #else
 	p += offset;
 #ifdef L2_ONLY
@@ -329,13 +337,16 @@ double runbench(int total_blocks, datatype *cd, long size, bool spreadsheet){
 		cudaDeviceProp deviceProp;
 		CUDA_SAFE_CALL( cudaGetDevice(&current_device) );
 		CUDA_SAFE_CALL( cudaGetDeviceProperties(&deviceProp, current_device) );
+		int coreClock = 0;
+		cudaDeviceGetAttribute(&coreClock, cudaDevAttrClockRate, current_device);
+
 		printf("%12d;%9ld;%6d;%8d;%10ld;%8ld;%14.3f;%13.3f;%10.3f;%8.3f;%9.3f\n",
 			(int)sizeof(datatype), compute_grid_size, stepwidth, index_clamping, data_size, data_size*sizeof(datatype),
-			kernel_time, 
+			kernel_time,
 			((double)computations)/kernel_time*1000./(double)(1000*1000*1000),
 			bandwidth,
 			((double)memoryoperations)/kernel_time*1000./(1000.*1000.*1000.),
-			((double)memoryoperations)/kernel_time*1000./(1000.*1000.*1000.) / (deviceProp.multiProcessorCount*deviceProp.clockRate/1000000.0));
+			((double)memoryoperations)/kernel_time*1e3/(1e9) / (deviceProp.multiProcessorCount * coreClock / 1.0e6));
 	}
 	return bandwidth;
 }
@@ -360,9 +371,23 @@ double cachebenchGPU(double *c, long size, bool excel){
 	CUDA_SAFE_CALL( cudaMemset(cd, 0, size*sizeof(datatype)) );  // initialize to zeros
 
 	// Bind textures to buffer
-	cudaBindTexture(0, texdataI1, cd, size*sizeof(datatype));
-	cudaBindTexture(0, texdataI2, cd, size*sizeof(datatype));
-	cudaBindTexture(0, texdataI4, cd, size*sizeof(datatype));
+	// cudaBindTexture(0, texdataI1, cd, size*sizeof(datatype));
+	// cudaBindTexture(0, texdataI2, cd, size*sizeof(datatype));
+	// cudaBindTexture(0, texdataI4, cd, size*sizeof(datatype));
+
+// Create linear-memory texture objects
+cudaResourceDesc resDesc{};
+resDesc.resType = cudaResourceTypeLinear;
+resDesc.res.linear.devPtr = cd;
+resDesc.res.linear.sizeInBytes = size * sizeof(datatype);
+resDesc.res.linear.desc = cudaCreateChannelDesc<datatype>();
+
+cudaTextureDesc texDesc{};
+texDesc.readMode = cudaReadModeElementType;
+
+CUDA_SAFE_CALL(cudaCreateTextureObject(&texdataI1, &resDesc, &texDesc, nullptr));
+CUDA_SAFE_CALL(cudaCreateTextureObject(&texdataI2, &resDesc, &texDesc, nullptr));
+CUDA_SAFE_CALL(cudaCreateTextureObject(&texdataI4, &resDesc, &texDesc, nullptr));
 
 	// Synchronize in order to wait for memory operations to finish
 	CUDA_SAFE_CALL( cudaDeviceSynchronize() );
@@ -420,10 +445,12 @@ double cachebenchGPU(double *c, long size, bool excel){
 	CUDA_SAFE_CALL( cudaMemcpy(c, cd, size*sizeof(datatype), cudaMemcpyDeviceToHost) );
 
 	// Unbind textures
-	cudaUnbindTexture(texdataI1);
-	cudaUnbindTexture(texdataI2);
-	cudaUnbindTexture(texdataI4);
-
+	// cudaUnbindTexture(texdataI1);
+	// cudaUnbindTexture(texdataI2);
+	// cudaUnbindTexture(texdataI4);
+cudaDestroyTextureObject(texdataI1);
+cudaDestroyTextureObject(texdataI2);
+cudaDestroyTextureObject(texdataI4);
 	CUDA_SAFE_CALL( cudaFree(cd) );
 	return peak_bw;
 }

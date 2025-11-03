@@ -156,7 +156,7 @@ double runbench(const size_t data_vecwidth, bool readonly, int total_blocks, cl_
 	} else {
 		printf("%12d;%9ld;%6d;%8d;%10ld;%8ld;%14.3f;%13.3f;%10.3f;%8.3f;%9.3f\n",
 			(int)(data_vecwidth*sizeof(int)), compute_grid_size, stepwidth, index_clamping, data_size, data_size*(data_vecwidth*sizeof(int)),
-			kernel_time, 
+			kernel_time,
 			((double)computations)/kernel_time*1000./(double)(1000*1000*1000),
 			bandwidth,
 			((double)memoryoperations)/kernel_time*1000./(1000.*1000.*1000.),
@@ -243,7 +243,7 @@ void build_kernels(cl_context context, cl_device_id device_id, const char *c_ker
 	std::ostringstream build_options;
 	build_options << "-cl-std=CL1.1 -DVECTOR_SIZE=" TEXTIFY(VECTOR_SIZE) " -D__CUSTOM_TYPE__=int";
 //	std::cout << build_options.str() <<std::endl;
-	
+
 	if( veclen>1 )
 		build_options << veclen;
 
@@ -288,7 +288,7 @@ extern "C" void cachebenchGPU(cl_device_id selected_device_id, double *c, size_t
 	OCL_SAFE_CALL( clGetDeviceInfo(selected_device_id, CL_DEVICE_PLATFORM, sizeof(cl_platform_id), &platform_id, NULL) );
 	// Set context properties
 	cl_context_properties ctxProps[] = { CL_CONTEXT_PLATFORM, (cl_context_properties)platform_id, 0 };
-	
+
 	// Get #CUs and Clock frequency
 	cl_uint cnt_cunits, dev_freq;
 	OCL_SAFE_CALL( clGetDeviceInfo(selected_device_id, CL_DEVICE_MAX_COMPUTE_UNITS, sizeof(cnt_cunits), &cnt_cunits, NULL) );
