@@ -14,11 +14,6 @@
 
 const int BLOCK_SIZE = 256;
 
-// texture< int, 1, cudaReadModeElementType> texdataI1;
-// texture<int2, 1, cudaReadModeElementType> texdataI2;
-// texture<int4, 1, cudaReadModeElementType> texdataI4;
-
-// Modern CUDA 12+ texture objects
 cudaTextureObject_t texdataI1 = 0;
 cudaTextureObject_t texdataI2 = 0;
 cudaTextureObject_t texdataI4 = 0;

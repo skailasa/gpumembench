@@ -211,11 +211,5 @@ printf("\tshared memory operations per clock (128bit):%8.2f (per SM%6.2f)\n",
        ((double)operations_128bit)/(coreClock*krn_time_shmem_128b),
        ((double)operations_128bit)/(coreClock*krn_time_shmem_128b)/deviceProp.multiProcessorCount);
 
-
-	// printf("Normalized per SM\n");
-	// cudaDeviceProp deviceProp = GetDeviceProperties();
-	// printf("\tshared memory operations per clock (32bit) :%8.2f (per SM%6.2f)\n",((double)operations_32bit)/(deviceProp.clockRate*krn_time_shmem_32b), ((double)operations_32bit)/(deviceProp.clockRate*krn_time_shmem_32b)/deviceProp.multiProcessorCount);
-	// printf("\tshared memory operations per clock (64bit) :%8.2f (per SM%6.2f)\n",((double)operations_64bit)/(deviceProp.clockRate*krn_time_shmem_64b), ((double)operations_64bit)/(deviceProp.clockRate*krn_time_shmem_64b)/deviceProp.multiProcessorCount);
-	// printf("\tshared memory operations per clock (128bit):%8.2f (per SM%6.2f)\n",((double)operations_128bit)/(deviceProp.clockRate*krn_time_shmem_128b), ((double)operations_128bit)/(deviceProp.clockRate*krn_time_shmem_128b)/deviceProp.multiProcessorCount);
-	CUDA_SAFE_CALL( cudaDeviceReset() );
+   CUDA_SAFE_CALL( cudaDeviceReset() );
 }

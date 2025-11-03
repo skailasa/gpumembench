@@ -14,14 +14,13 @@ ifeq (${BITS},64)
 	LIBSUFFIX := 64
 endif
 LFLAGS = -L${CUDA_INSTALL_PATH}/lib${LIBSUFFIX} -lm -lstdc++ -lcudart -lrt
-# NVCODE = -gencode=arch=compute_52,code=\"compute_52\" -gencode=arch=compute_30,code=\"compute_30\" -gencode=arch=compute_20,code=\"compute_20\"
-#NVCODE = -gencode=arch=compute_30,code=\"compute_30,sm_30\"
 NVCODE = -gencode arch=compute_89,code=sm_89 \
          -gencode arch=compute_90,code=sm_90
 
 .PHONY: all
 
-all: cachebench cachebench-l2-only cachebench-tex-loads
+# all: cachebench cachebench-l2-only cachebench-tex-loads
+all: cachebench cachebench-l2-only
 
 cachebench: main.o cache_kernels.o
 	${CC} -o $@ $^ ${LFLAGS}

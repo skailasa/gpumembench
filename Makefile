@@ -9,8 +9,8 @@
 BACKEND ?= none
 
 # Directories per backend
-CUDA_DIRS = cachebench-cuda shmembench-cuda constbench-cuda
-AMD_DIRS  = cachebench-amd  shmembench-amd  constbench-amd
+CUDA_DIRS = cachebench-cuda shmembench-cuda
+AMD_DIRS  = cachebench-amd  shmembench-amd
 
 # Binaries per backend
 CUDA_BINARIES = \
@@ -18,14 +18,8 @@ CUDA_BINARIES = \
 	cachebench-cuda/cachebench-l2-only \
 	cachebench-cuda/cachebench-tex-loads \
 	shmembench-cuda/shmembench \
-	constbench-cuda/constbench
 
-AMD_BINARIES = \
-	cachebench-amd/cachebench \
-	cachebench-amd/cachebench-l2-only \
-	cachebench-amd/cachebench-tex-loads \
-	shmembench-amd/shmembench \
-	constbench-amd/constbench
+AMD_BINARIES = shmembench-amd/shmembench
 
 # ============================================================
 # Conditional logic for backends
